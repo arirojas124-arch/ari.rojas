@@ -2,6 +2,7 @@ import { Router } from 'express';
 import { z } from 'zod';
 import { Company } from '../auth/auth.models.js';
 import { requireAuth, requirePermission } from '../auth/auth.middleware.js';
+import { writeAuditLog } from '../audit/audit.service.js';
 
 const router = Router();
 
@@ -39,6 +40,7 @@ router.patch('/me', requireAuth, requirePermission('companies:write'), async (re
       return;
     }
 
+    await writeAuditLog({ tenantId: request.authUser!.tenantId, actorUserId: request.authUser!.userId, action: 'company.updated', resource: 'company', resourceId: company.id, metadata: { fields: Object.keys(input) } });
     response.json({ data: company });
   } catch (error) {
     next(error);
