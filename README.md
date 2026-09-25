@@ -1,20 +1,49 @@
-# ERP Multigestión
+# ARI ERP
 
 Sistema ERP modular y multiempresa para web y móvil.
 
 ## Estado actual
 
-El repositorio se encuentra en la Fase 0 (análisis del entorno). La carpeta de trabajo estaba vacía y aún no existe una aplicación, un repositorio Git ni dependencias instaladas.
+El proyecto está en transición de Fase 0 — Fundación técnica hacia Fase 1 — Diseño funcional y sistema visual ARI ERP.
 
-Consulta el diagnóstico en [docs/analisis-entorno.md](docs/analisis-entorno.md) y el avance del proyecto en [docs/avances.md](docs/avances.md).
+Ya existe una base funcional de API con autenticación, usuarios, empresas, aislamiento por tenantId, validación, seguridad HTTP y MongoDB preparado. Web y móvil tienen una base ejecutable conectada al endpoint de salud.
 
-## Requisitos previos
+## Stack
+- React Native Web + Vite para web.
+- Expo + React Native para móvil.
+- Node.js + Express + TypeScript para API.
+- MongoDB Atlas + Mongoose para persistencia.
+- JWT + bcrypt para autenticación inicial.
+- Zod para validación.
+- Monolito modular; no se introducirán microservicios en el MVP.
 
-Antes de iniciar la Fase 2 será necesario instalar y verificar:
+## Próximas fases
+1. Diseño funcional del ERP.
+2. Design System y UI ARI ERP.
+3. App Shell: sidebar, header, rutas y estados.
+4. Seguridad: sesiones, refresh tokens, permisos configurables y auditoría.
+5. Clientes, proveedores, productos e inventario.
+6. Ventas y compras.
+7. Finanzas.
+8. Dashboard con métricas reales.
+9. Recursos humanos y proyectos.
+10. Reportes.
+11. Aplicación móvil MVP.
+12. Pruebas y producción.
 
-- Node.js LTS y npm.
-- Git.
-- MongoDB Atlas o una instancia MongoDB compatible.
-- Un proveedor de credenciales seguro para las variables de entorno locales.
+## Desarrollo
 
-No se incluyen credenciales reales en este repositorio.
+npm install
+npm run typecheck
+npm run build:api
+npm run dev:api
+
+API por defecto: puerto 4000.
+
+## Salud
+- GET /health: proceso HTTP activo.
+- GET /ready: API y MongoDB listos para recibir tráfico.
+
+## Seguridad
+Las rutas empresariales deben obtener tenantId desde la sesión autenticada. El cliente no puede elegir libremente el tenant para acceder a información empresarial.
+Los secretos reales y la URI de MongoDB Atlas nunca deben subirse a Git.
