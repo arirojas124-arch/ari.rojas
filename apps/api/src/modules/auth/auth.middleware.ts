@@ -1,6 +1,6 @@
 import type { NextFunction, Request, Response } from 'express';
 import jwt from 'jsonwebtoken';
-import { config } from '../../config.js';
+import { accessSecret } from '../../config.js';
 import type { AuthUser } from './auth.types.js';
 
 declare global {
@@ -21,7 +21,7 @@ export function requireAuth(request: Request, response: Response, next: NextFunc
   }
 
   try {
-    const payload = jwt.verify(token, config.JWT_ACCESS_SECRET);
+    const payload = jwt.verify(token, accessSecret);
     if (typeof payload === 'string' || !payload.sub || typeof payload.tenantId !== 'string' || typeof payload.role !== 'string') {
       throw new Error('Invalid claims');
     }
