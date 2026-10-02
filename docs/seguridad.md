@@ -19,6 +19,10 @@ El endpoint de login limita a 10 intentos por IP en una ventana de 15 minutos. E
 
 MongoDB solo se conecta cuando existe `MONGODB_URI`. No se almacenan credenciales reales en el repositorio y no se considera Atlas configurado hasta comprobar una conexión real.
 
+Cuando Atlas no está disponible, la API mantiene el endpoint de salud para diagnóstico, pero rechaza las operaciones persistentes con `503 DATABASE_UNAVAILABLE`; no utiliza datos simulados.
+
+CORS permite únicamente los orígenes configurados y los orígenes locales explícitos durante desarrollo; no se habilita `*`.
+
 ## Pendientes antes de producción
 
 - Refresh tokens rotativos y revocación de sesiones.

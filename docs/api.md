@@ -6,6 +6,8 @@ La API se versionará bajo `/api/v1`. En la fase inicial solo está disponible e
 - `POST /api/v1/auth/register`: crea una empresa y su administrador inicial. Requiere MongoDB.
 - `POST /api/v1/auth/login`: autentica un usuario dentro de su `tenantId`. Requiere MongoDB.
 - `GET /api/v1/auth/me`: devuelve el contexto autenticado; requiere `Authorization: Bearer <token>`.
+
+La interfaz web expone `/register` para crear una empresa y su cuenta administradora, y `/login` para iniciar sesión. Ambas rutas manejan errores de validación de la API sin simular persistencia.
 - `GET /api/v1/companies/me`: consulta la empresa del token autenticado; requiere `companies:read`.
 - `PATCH /api/v1/companies/me`: actualiza nombre, dirección o teléfono; requiere `companies:write`.
 - `GET /api/v1/users`: lista los usuarios de la empresa del token; requiere `users:read`.

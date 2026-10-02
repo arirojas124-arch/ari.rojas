@@ -6,13 +6,15 @@
   "workspaces": ["apps/*", "packages/*"],
   "scripts": {
     "dev:api": "npm run dev --workspace @erp/api",
+    "dev:web": "npm run dev --workspace @erp/web -- --host 0.0.0.0",
+    "build": "npm run build --workspace @erp/api && npm run build --workspace @erp/web",
     "build:api": "npm run build --workspace @erp/api",
+    "start:api": "npm run start --workspace @erp/api",
     "typecheck": "npm run typecheck --workspaces --if-present",
     "lint": "npm run lint --workspaces --if-present",
     "test": "npm run test --workspaces --if-present"
   },
   "engines": {
     "node": ">=22.0.0"
-  },
-  "packageManager": "npm@11.5.2"
+  }
 }

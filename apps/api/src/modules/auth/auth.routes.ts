@@ -7,8 +7,10 @@ import { Company, User } from './auth.models.js';
 import { requireAuth, requirePermission } from './auth.middleware.js';
 import { permissionsForRole } from './permissions.js';
 import { authRateLimit } from './rate-limit.js';
+import { requireDatabase } from '../../database.js';
 
 const router = Router();
+router.use(requireDatabase);
 
 const registerSchema = z.object({
   companyName: z.string().trim().min(2).max(120),

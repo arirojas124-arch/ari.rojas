@@ -1,0 +1,22 @@
+:root {
+  --ari-color-canvas: #f5f6f2;
+  --ari-color-surface: #ffffff;
+  --ari-color-surface-muted: #f8f9f6;
+  --ari-color-border: #e5e9e3;
+  --ari-color-text: #202a26;
+  --ari-color-text-muted: #77817b;
+  --ari-color-brand: #215b4b;
+  --ari-color-brand-strong: #17483b;
+  --ari-color-brand-soft: #e8f1ec;
+  --ari-color-accent: #c86c4a;
+  --ari-color-accent-soft: #fbede7;
+  --ari-color-success: #287653;
+  --ari-color-warning: #a76a17;
+  --ari-color-danger: #b44940;
+  --ari-radius-sm: 4px;
+  --ari-radius-md: 7px;
+  --ari-radius-lg: 10px;
+  --ari-font-ui: 'DM Sans', sans-serif;
+  --ari-shadow-subtle: 0 2px 8px rgba(27, 44, 36, .04);
+  --ari-shadow-popover: 0 12px 32px rgba(25, 38, 32, .12);
+}

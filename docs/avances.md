@@ -59,3 +59,28 @@
 - La prueba de conexión detectó `EBADNAME` en `_mongodb._tcp.<cluster>`; la URI todavía usa el marcador de clúster y no se considera conectada.
 
 Todavía no se ejecutaron registro/login contra MongoDB ni pruebas de aislamiento entre empresas porque Atlas aún no está configurado.
+
+## Diagnóstico de conexión web/API
+
+- Se confirmó que el error `Failed to fetch` ocurría porque la API no escuchaba cuando MongoDB Atlas fallaba.
+- Atlas responde con `ReplicaSetNoPrimary`; el acceso de red/IP actual no está autorizado o el clúster no tiene un primario disponible.
+- La API ahora inicia HTTP aunque Atlas no esté disponible, expone `/health` con `database: unavailable` y devuelve `503 DATABASE_UNAVAILABLE` en autenticación.
+- Sigue siendo necesario agregar la IP de desarrollo en MongoDB Atlas (Network Access) y verificar usuario, contraseña y cadena `MONGODB_URI`.
+- Se corrigió CORS para permitir explícitamente los orígenes locales `localhost` y `127.0.0.1` durante desarrollo.
+- Se comprobó el preflight desde `http://127.0.0.1:5173`; la solicitud de registro ya alcanza la API y devuelve validación HTTP `400` cuando los datos son inválidos.
+
+## UI-01 y UI-02 - Design System y ERP Shell
+
+**Estado:** completadas para su alcance inicial.
+
+- Se creó `packages/ui` con tokens de color, tipografía, spacing, breakpoints, radios y sombras.
+- Se añadieron componentes reutilizables: Button, Input, Card, Badge, Toggle, Dialog, DataTable, EmptyState, PageHeader y Breadcrumbs.
+- Se amplió el paquete con Select, Checkbox, Tabs, Dropdown, Toast, Tooltip, Avatar, StatusBadge, ChartCard, Skeleton, ErrorState y DataTable con selección/acciones.
+- Se integró la marca ARI ERP, DM Sans, sidebar, topbar y navegación responsive.
+- La búsqueda filtra el catálogo local de módulos; los módulos aún no implementados aparecen deshabilitados.
+- La empresa y sesión se muestran como no configuradas; no se inventaron usuarios ni KPIs.
+- Se conserva el chequeo real de `GET /health`.
+- Se documentaron decisiones en `docs/ui-architecture.md`, `docs/design-system.md`, `docs/frontend-architecture.md` y `docs/implementation-status.md`.
+- Typecheck/build web y build API pasan. Revisión del navegador a 390 px y 1440 px sin overflow horizontal.
+
+**Siguiente:** UI-03, dashboard conectado a endpoints reales tras implementar datos empresariales; UI-04, autenticación y protección de rutas.

@@ -4,13 +4,13 @@ Sistema ERP modular y multiempresa para web y móvil.
 
 ## Estado actual
 
-El repositorio se encuentra en la Fase 0 (análisis del entorno). La carpeta de trabajo estaba vacía y aún no existe una aplicación, un repositorio Git ni dependencias instaladas.
+La base de la API y la interfaz ARI ERP están en desarrollo. UI-01 (Design System inicial) y UI-02 (ERP Shell web) están implementadas; el dashboard aún no presenta métricas hasta contar con endpoints y datos reales.
 
-Consulta el diagnóstico en [docs/analisis-entorno.md](docs/analisis-entorno.md) y el avance del proyecto en [docs/avances.md](docs/avances.md).
+Consulta [docs/avances.md](docs/avances.md), [docs/implementation-status.md](docs/implementation-status.md), [docs/ui-architecture.md](docs/ui-architecture.md) y [docs/design-system.md](docs/design-system.md).
 
 ## Requisitos previos
 
-Antes de iniciar la Fase 2 será necesario instalar y verificar:
+Requisitos:
 
 - Node.js LTS y npm.
 - Git.
@@ -18,3 +18,12 @@ Antes de iniciar la Fase 2 será necesario instalar y verificar:
 - Un proveedor de credenciales seguro para las variables de entorno locales.
 
 No se incluyen credenciales reales en este repositorio.
+
+## Desarrollo web
+
+```sh
+npm install
+npm run dev --workspace @erp/web -- --host 0.0.0.0
+```
+
+La web utiliza `VITE_API_URL` para consultar el endpoint real de salud de la API. La autenticación web y los módulos empresariales siguen pendientes.

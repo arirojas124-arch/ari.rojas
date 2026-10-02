@@ -1,8 +1,10 @@
-import { AppRegistry } from 'react-native';
 import { createRoot } from 'react-dom/client';
-import App from './App.js';
+import { BrowserRouter } from 'react-router-dom';
+import { AppRoutes } from './navigation/AppRoutes.js';
+import '@fontsource/dm-sans/400.css';
+import '@fontsource/dm-sans/500.css';
+import '@fontsource/dm-sans/700.css';
+import '@ari-erp/ui/tokens.css';
 import './styles.css';
 
-AppRegistry.registerComponent('ErpMultigestión', () => App);
-
-createRoot(document.getElementById('root')!).render(<App />);
+createRoot(document.getElementById('root')!).render(<BrowserRouter><AppRoutes /></BrowserRouter>);

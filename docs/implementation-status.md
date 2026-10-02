@@ -1,0 +1,32 @@
+# Estado de implementación UI
+
+## UI-01 - Design System
+
+**Estado:** completada para el alcance de shell. Tokens y primitives están disponibles en `packages/ui`. El selector de fecha, tests visuales y variantes adicionales quedan como seguimiento; no bloquean UI-02.
+
+## UI-02 - ERP Shell
+
+**Estado:** completada para el alcance base. Sidebar responsive, drawer móvil, topbar, búsqueda local de módulos, navegación al dashboard y marcador de salud real de API. Empresa y sesión se muestran como no configuradas.
+
+## UI-03 - Dashboard funcional
+
+**Estado:** pendiente. La pantalla actual es un estado vacío explícito; no hay KPIs ni datos falsos.
+
+## UI-04 - Autenticación web
+
+**Estado:** login y creación de cuenta implementados. `/login` consume `POST /api/v1/auth/login` y `/register` consume `POST /api/v1/auth/register`; la sesión se guarda temporalmente en `sessionStorage` y el usuario es redirigido al dashboard.
+
+La prueba de alta contra MongoDB queda pendiente porque Atlas todavía no está configurado.
+
+## Validación
+
+- Typecheck web: correcto.
+- Build web: correcto.
+- Build API: correcto.
+- API no modificada por UI-01/UI-02.
+- Typecheck de web y `packages/ui`: correcto.
+- Revisión en navegador a 390 px y 1440 px: sin overflow horizontal.
+- Drawer móvil: abre y cierra mediante su control interno.
+- Buscador de módulos y popover de notificaciones: funcionales.
+- Pendiente: auditoría completa de accesibilidad y pruebas automatizadas de componentes.
+- Pendiente preexistente fuera de UI-01/UI-02: `npm run typecheck --workspace mobile` falla al resolver `expo` desde `apps/mobile/index.ts`.
