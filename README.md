@@ -51,4 +51,4 @@ CORS_ORIGINS=https://tu-dominio.com,https://www.tu-dominio.com
 
 En Cloudflare, crea un DNS `CNAME` o `A` apuntando al servicio de Render/Vercel y activa la proxy. Si aparece `522`, significa que Cloudflare no pudo llegar al servidor origen: revisa que el servicio esté activo, que el puerto sea el correcto y que el dominio esté apuntando al host correcto.
 
-La web utiliza `VITE_API_URL` para comunicarse con la API. Login y registro están implementados; usuarios, clientes y productos cuentan con listados y altas/edición ligados a MongoDB. Ventas y los demás módulos continúan pendientes y se habilitarán por fases.
+La web utiliza `VITE_API_URL` para comunicarse con la API. Login y registro están implementados; usuarios, clientes, productos, ventas, facturas internas y reportes cuentan con pantallas y endpoints ligados a MongoDB. Al confirmar una venta se crea un comprobante interno no fiscal y se descuentan existencias en una transacción. Compras y los módulos restantes se habilitarán por fases.

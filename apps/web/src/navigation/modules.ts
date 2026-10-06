@@ -6,8 +6,8 @@ export const moduleGroups: ModuleGroup[] = [
   { label: 'Comercial', items: [
     { label: 'Clientes', path: '/customers', available: true, permission: 'customers:read' },
     { label: 'Cotizaciones', path: '/quotes', available: false, permission: 'quotes:read' },
-    { label: 'Ventas', path: '/sales', available: false, permission: 'sales:read' },
-    { label: 'Facturas', path: '/invoices', available: false, permission: 'invoices:read' }
+    { label: 'Ventas', path: '/sales', available: true, permission: 'sales:read' },
+    { label: 'Facturas', path: '/invoices', available: true, permission: 'invoices:read' }
   ] },
   { label: 'Inventario', items: [
     { label: 'Productos', path: '/products', available: true, permission: 'products:read' },
@@ -36,7 +36,7 @@ export const moduleGroups: ModuleGroup[] = [
     { label: 'Proyectos y tareas', path: '/projects', available: false, permission: 'projects:read' },
     { label: 'Seguimiento', path: '/tasks', available: false, permission: 'projects:read' }
   ] },
-  { items: [{ label: 'Reportes', path: '/reports', available: false, permission: 'reports:read' }] },
+  { items: [{ label: 'Reportes', path: '/reports', available: true, permission: 'reports:read' }] },
   { label: 'Configuración', items: [
     { label: 'Empresa', path: '/settings/company', available: false, permission: 'companies:read' },
     { label: 'Usuarios y roles', path: '/settings/users', available: true, permission: 'users:read' },

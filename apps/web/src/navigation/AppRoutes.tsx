@@ -7,6 +7,9 @@ import { ProtectedRoute } from './ProtectedRoute.js';
 import { CustomersPage } from '../features/management/CustomersPage.js';
 import { ProductsPage } from '../features/management/ProductsPage.js';
 import { UsersPage } from '../features/management/UsersPage.js';
+import { SalesPage } from '../features/management/SalesPage.js';
+import { InvoicesPage } from '../features/management/InvoicesPage.js';
+import { ReportsPage } from '../features/management/ReportsPage.js';
 
 export function AppRoutes() {
   return <Routes>
@@ -18,6 +21,9 @@ export function AppRoutes() {
       <Route path="customers" element={<CustomersPage />} />
       <Route path="products" element={<ProductsPage />} />
       <Route path="settings/users" element={<UsersPage />} />
+      <Route path="sales" element={<SalesPage />} />
+      <Route path="invoices" element={<InvoicesPage />} />
+      <Route path="reports" element={<ReportsPage />} />
     </Route>
     <Route path="*" element={<Navigate to="/dashboard" replace />} />
   </Routes>;
