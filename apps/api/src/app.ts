@@ -10,15 +10,15 @@ import { isDatabaseConnected } from './database.js';
 export function createApp() {
   const app = express();
   const configuredOrigins = (process.env.CORS_ORIGINS ?? '').split(',').map((origin) => origin.trim()).filter(Boolean);
-  const developmentOrigins = process.env.NODE_ENV === 'production' ? [] : [
-    'https://ari-rojas.pages.dev',
-    'http://localhost:5173',
-    'http://127.0.0.1:5173',
-    'http://localhost:8081',
-    'http://127.0.0.1:8081',
-    'http://localhost:19006',
-    'http://127.0.0.1:19006'
-  ];
+  const developmentOrigins = [
+  'https://ari-rojas.pages.dev',
+  'http://localhost:5173',
+  'http://127.0.0.1:5173',
+  'http://localhost:8081',
+  'http://127.0.0.1:8081',
+  'http://localhost:19006',
+  'http://127.0.0.1:19006'
+];
   const allowedOrigins = new Set([...configuredOrigins, ...developmentOrigins]);
 
   app.disable('x-powered-by');
