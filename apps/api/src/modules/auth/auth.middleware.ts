@@ -2,6 +2,7 @@ import type { NextFunction, Request, Response } from 'express';
 import jwt from 'jsonwebtoken';
 import { config } from '../../config.js';
 import type { AuthUser } from './auth.types.js';
+import { permissionsForRole } from './permissions.js';
 
 declare global {
   namespace Express {
@@ -26,8 +27,12 @@ export function requireAuth(request: Request, response: Response, next: NextFunc
       throw new Error('Invalid claims');
     }
 
-    const permissions = Array.isArray(payload.permissions) && payload.permissions.every((value) => typeof value === 'string') ? payload.permissions : [];
-    request.authUser = { userId: payload.sub, tenantId: payload.tenantId, role: payload.role, permissions };
+    request.authUser = {
+      userId: payload.sub,
+      tenantId: payload.tenantId,
+      role: payload.role,
+      permissions: permissionsForRole(payload.role)
+    };
     next();
   } catch {
     response.status(401).json({ error: { code: 'INVALID_TOKEN', message: 'Invalid or expired token' } });
