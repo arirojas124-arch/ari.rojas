@@ -3,22 +3,20 @@ services:
     name: ari-erp-api
     runtime: node
     plan: free
-    rootDir: .
     buildCommand: npm ci && npm run build:api
     startCommand: npm run start --workspace @erp/api
     healthCheckPath: /health
-    autoDeploy: true
     envVars:
       - key: NODE_ENV
         value: production
-      - key: CORS_ORIGINS
-        value: https://ari-rojas.pages.dev,http://localhost:5173,http://localhost:8081,http://localhost:19006
-      - key: JWT_ACCESS_SECRET
-        sync: false
-      - key: JWT_REFRESH_SECRET
-        sync: false
+      - key: PORT
+        value: 10000
       - key: MONGODB_URI
         sync: false
+      - key: JWT_ACCESS_SECRET
+        generateValue: true
+      - key: JWT_REFRESH_SECRET
+        generateValue: true
       - key: JWT_ACCESS_EXPIRES_IN
         value: 15m
       - key: JWT_REFRESH_EXPIRES_IN
@@ -27,3 +25,5 @@ services:
         value: 30
       - key: MONGODB_CONNECT_TIMEOUT_MS
         value: 10000
+      - key: CORS_ORIGINS
+        value: https://ari-rojas.pages.dev
