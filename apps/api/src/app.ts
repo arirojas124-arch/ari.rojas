@@ -11,6 +11,7 @@ export function createApp() {
   const app = express();
   const configuredOrigins = (process.env.CORS_ORIGINS ?? '').split(',').map((origin) => origin.trim()).filter(Boolean);
   const developmentOrigins = process.env.NODE_ENV === 'production' ? [] : [
+    'https://ari-rojas.pages.dev',
     'http://localhost:5173',
     'http://127.0.0.1:5173',
     'http://localhost:8081',
