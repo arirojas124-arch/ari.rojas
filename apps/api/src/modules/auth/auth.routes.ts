@@ -1,6 +1,7 @@
 import { Router } from 'express';
 import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
+import mongoose from 'mongoose';
 import { z } from 'zod';
 import { config } from '../../config.js';
 import { Company, User } from './auth.models.js';
@@ -21,10 +22,21 @@ const registerSchema = z.object({
 });
 
 const loginSchema = z.object({
-  tenantId: z.string().regex(/^[a-f\d]{24}$/i),
+  tenantId: z.string().trim().min(2).max(120),
   email: z.string().trim().email().max(160),
   password: z.string().min(1).max(128)
 });
+
+function normalizeTenantLookup(tenantId: string) {
+  const trimmed = tenantId.trim();
+  if (!trimmed) return null;
+
+  if (/^[a-f\d]{24}$/i.test(trimmed)) {
+    return { kind: 'objectId' as const, value: new mongoose.Types.ObjectId(trimmed) };
+  }
+
+  return { kind: 'slug' as const, value: trimmed.toLowerCase() };
+}
 
 function issueAccessToken(user: { id: string; tenantId: string; role: string }) {
   return jwt.sign({ tenantId: user.tenantId, role: user.role, permissions: permissionsForRole(user.role) }, config.JWT_ACCESS_SECRET, {
@@ -64,7 +76,24 @@ router.post('/register', async (request, response, next) => {
 router.post('/login', authRateLimit, async (request, response, next) => {
   try {
     const input = loginSchema.parse(request.body);
-    const user = await User.findOne({ tenantId: input.tenantId, email: input.email.toLowerCase(), isActive: true }).select('+passwordHash');
+    const tenantLookup = normalizeTenantLookup(input.tenantId);
+
+    if (!tenantLookup) {
+      response.status(400).json({ error: { code: 'INVALID_TENANT', message: 'Tenant identifier is required' } });
+      return;
+    }
+
+    const tenantQuery = tenantLookup.kind === 'objectId'
+      ? { _id: tenantLookup.value }
+      : { slug: tenantLookup.value };
+
+    const company = await Company.findOne({ ...tenantQuery, isActive: true }).lean();
+    if (!company) {
+      response.status(401).json({ error: { code: 'INVALID_CREDENTIALS', message: 'Invalid credentials' } });
+      return;
+    }
+
+    const user = await User.findOne({ tenantId: company._id, email: input.email.toLowerCase(), isActive: true }).select('+passwordHash');
     if (!user || !(await bcrypt.compare(input.password, user.passwordHash))) {
       response.status(401).json({ error: { code: 'INVALID_CREDENTIALS', message: 'Invalid credentials' } });
       return;

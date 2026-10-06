@@ -29,7 +29,7 @@ export function DashboardPage() {
           {plannedAreas.map(({ icon: Icon, title, detail }) => <div className="dashboard-area" key={title}><span className="dashboard-area-icon"><Icon size={18} /></span><span><strong>{title}</strong><small>{detail}</small></span><ArrowRight size={16} className="dashboard-area-arrow" /></div>)}
         </div>
       </section>
-      <div className="dashboard-next-step"><span>PRÓXIMO HITO</span><p>Design system y navegación están listos para recibir el módulo de clientes.</p><Button variant="secondary" disabled>Clientes <ArrowRight size={15} /></Button></div>
+      <div className="dashboard-next-step"><span>PRÓXIMO HITO</span><p>Clientes, productos y usuarios ya están conectados. La siguiente fase habilitará ventas.</p><Button variant="secondary" disabled>Ventas <ArrowRight size={15} /></Button></div>
     </div>
   );
 }

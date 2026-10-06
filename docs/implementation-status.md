@@ -18,6 +18,14 @@
 
 La prueba de alta contra MongoDB queda pendiente porque Atlas todavía no está configurado.
 
+## Módulos operativos iniciales
+
+- Usuarios: listado por empresa, creación con contraseña, edición de nombre/rol y activación/desactivación.
+- Clientes: listado, alta, edición y activación/desactivación.
+- Productos: listado, alta, edición de SKU/precio/existencia y activación/desactivación.
+- Los endpoints mantienen aislamiento por empresa (`tenantId`) y verifican permisos del token.
+- Ventas, compras, inventario/movimientos y el resto de módulos continúan pendientes.
+
 ## Validación
 
 - Typecheck web: correcto.

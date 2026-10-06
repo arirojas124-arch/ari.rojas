@@ -4,13 +4,13 @@ export type ModuleGroup = { label?: string; items: ModuleItem[] };
 export const moduleGroups: ModuleGroup[] = [
   { items: [{ label: 'Dashboard', path: '/dashboard', available: true }] },
   { label: 'Comercial', items: [
-    { label: 'Clientes', path: '/customers', available: false, permission: 'customers:read' },
+    { label: 'Clientes', path: '/customers', available: true, permission: 'customers:read' },
     { label: 'Cotizaciones', path: '/quotes', available: false, permission: 'quotes:read' },
     { label: 'Ventas', path: '/sales', available: false, permission: 'sales:read' },
     { label: 'Facturas', path: '/invoices', available: false, permission: 'invoices:read' }
   ] },
   { label: 'Inventario', items: [
-    { label: 'Productos', path: '/products', available: false, permission: 'products:read' },
+    { label: 'Productos', path: '/products', available: true, permission: 'products:read' },
     { label: 'Categorías', path: '/categories', available: false, permission: 'categories:read' },
     { label: 'Almacenes', path: '/warehouses', available: false, permission: 'warehouses:read' },
     { label: 'Existencias', path: '/inventory', available: false, permission: 'inventory:read' },
@@ -39,7 +39,7 @@ export const moduleGroups: ModuleGroup[] = [
   { items: [{ label: 'Reportes', path: '/reports', available: false, permission: 'reports:read' }] },
   { label: 'Configuración', items: [
     { label: 'Empresa', path: '/settings/company', available: false, permission: 'companies:read' },
-    { label: 'Usuarios y roles', path: '/settings/users', available: false, permission: 'users:read' },
+    { label: 'Usuarios y roles', path: '/settings/users', available: true, permission: 'users:read' },
     { label: 'Auditoría', path: '/settings/audit', available: false, permission: 'audit:read' }
   ] }
 ];

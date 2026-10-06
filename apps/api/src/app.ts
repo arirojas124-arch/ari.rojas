@@ -5,6 +5,8 @@ import { ZodError } from 'zod';
 import { authRouter } from './modules/auth/auth.routes.js';
 import { companiesRouter } from './modules/companies/companies.routes.js';
 import { usersRouter } from './modules/users/users.routes.js';
+import { customersRouter } from './modules/customers/customers.routes.js';
+import { productsRouter } from './modules/products/products.routes.js';
 import { isDatabaseConnected } from './database.js';
 
 export function createApp() {
@@ -38,6 +40,8 @@ export function createApp() {
   app.use('/api/v1/auth', authRouter);
   app.use('/api/v1/companies', companiesRouter);
   app.use('/api/v1/users', usersRouter);
+  app.use('/api/v1/customers', customersRouter);
+  app.use('/api/v1/products', productsRouter);
 
   app.get('/health', (_request, response) => {
     response.json({
