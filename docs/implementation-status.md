@@ -24,6 +24,7 @@ La prueba de alta contra MongoDB queda pendiente porque Atlas todavía no está 
 - Clientes: listado, alta, edición y activación/desactivación.
 - Productos: listado, alta, edición de SKU/precio/existencia y activación/desactivación.
 - Los endpoints mantienen aislamiento por empresa (`tenantId`) y verifican permisos del token.
+- La sesión renueva automáticamente el token de acceso mientras el token de renovación siga vigente; las sesiones antiguas deberán iniciar sesión una vez para obtenerlo.
 - Ventas, compras, inventario/movimientos y el resto de módulos continúan pendientes.
 
 ## Validación

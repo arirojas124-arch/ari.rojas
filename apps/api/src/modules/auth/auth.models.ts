@@ -17,6 +17,13 @@ export interface UserDocument extends mongoose.Document {
   isActive: boolean;
 }
 
+export interface RefreshSessionDocument extends mongoose.Document {
+  tokenId: string;
+  userId: mongoose.Types.ObjectId;
+  tenantId: mongoose.Types.ObjectId;
+  expiresAt: Date;
+}
+
 const companySchema = new Schema(
   {
     name: { type: String, required: true, trim: true },
@@ -42,5 +49,19 @@ const userSchema = new Schema(
 
 userSchema.index({ tenantId: 1, email: 1 }, { unique: true });
 
+const refreshSessionSchema = new Schema(
+  {
+    tokenId: { type: String, required: true, unique: true },
+    userId: { type: Schema.Types.ObjectId, ref: 'User', required: true, index: true },
+    tenantId: { type: Schema.Types.ObjectId, ref: 'Company', required: true, index: true },
+    expiresAt: { type: Date, required: true }
+  },
+  { timestamps: true }
+);
+
+refreshSessionSchema.index({ expiresAt: 1 }, { expireAfterSeconds: 0 });
+
 export const Company: Model<CompanyDocument> = mongoose.models.Company as Model<CompanyDocument> ?? mongoose.model<CompanyDocument>('Company', companySchema);
 export const User: Model<UserDocument> = mongoose.models.User as Model<UserDocument> ?? mongoose.model<UserDocument>('User', userSchema);
+export const RefreshSession: Model<RefreshSessionDocument> =
+  mongoose.models.RefreshSession as Model<RefreshSessionDocument> ?? mongoose.model<RefreshSessionDocument>('RefreshSession', refreshSessionSchema);

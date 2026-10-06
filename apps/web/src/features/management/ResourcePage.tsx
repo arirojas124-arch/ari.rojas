@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useState, type FormEvent } from 'react';
+import { useLocation, useNavigate } from 'react-router-dom';
 import { Breadcrumbs, PageHeader } from '@ari-erp/ui';
 import { getCurrentUser, getSession } from '../../services/auth.service.js';
 import { createRecord, listRecords, updateRecord, type ManagedRecord } from '../../services/management.service.js';
@@ -32,6 +33,8 @@ type ResourcePageProps = {
 };
 
 export function ResourcePage({ title, description, endpoint, permission, fields, columns }: ResourcePageProps) {
+  const location = useLocation();
+  const navigate = useNavigate();
   const [rows, setRows] = useState<ManagedRecord[]>([]);
   const [canWrite, setCanWrite] = useState(false);
   const [loading, setLoading] = useState(true);
@@ -49,11 +52,16 @@ export function ResourcePage({ title, description, endpoint, permission, fields,
     try {
       setRows(await listRecords<ManagedRecord>(endpoint));
     } catch (error) {
-      setLoadError(error instanceof Error ? error.message : 'No se pudieron cargar los registros.');
+      const message = error instanceof Error ? error.message : 'No se pudieron cargar los registros.';
+      if (message.includes('sesión caducó')) {
+        navigate('/login', { replace: true, state: { from: location.pathname } });
+        return;
+      }
+      setLoadError(message);
     } finally {
       setLoading(false);
     }
-  }, [endpoint]);
+  }, [endpoint, location.pathname, navigate]);
 
   useEffect(() => { void load(); }, [load]);
 

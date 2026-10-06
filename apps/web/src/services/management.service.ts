@@ -1,6 +1,4 @@
-import { getSession } from './auth.service.js';
-
-const apiUrl = import.meta.env.VITE_API_URL ?? 'http://localhost:4000';
+import { authenticatedFetch } from './auth.service.js';
 
 export type ManagedRecord = {
   _id: string;
@@ -19,19 +17,9 @@ const errorMessages: Record<string, string> = {
 };
 
 async function request<T>(path: string, options: RequestInit = {}): Promise<T> {
-  const session = getSession();
-  if (!session) throw new Error('Tu sesión terminó. Inicia sesión de nuevo.');
-
   let response: Response;
   try {
-    response = await fetch(`${apiUrl}/api/v1${path}`, {
-      ...options,
-      headers: {
-        authorization: `Bearer ${session.accessToken}`,
-        ...(options.body ? { 'content-type': 'application/json' } : {}),
-        ...options.headers
-      }
-    });
+    response = await authenticatedFetch(path, options);
   } catch (error) {
     if (error instanceof TypeError) {
       throw new Error('No se pudo conectar con la API. Verifica que el servicio esté publicado y disponible.');

@@ -5,6 +5,7 @@ export type AuthSession = {
   userId: string;
   tenantId: string;
   accessToken: string;
+  refreshToken: string;
 };
 
 type ApiErrorBody = { error?: { message?: string } };
@@ -15,7 +16,15 @@ function readSession(): AuthSession | null {
 
   try {
     const session = JSON.parse(raw) as AuthSession;
-    if (session.userId && session.tenantId && session.accessToken) return session;
+    if (
+      typeof session.userId === 'string'
+      && typeof session.tenantId === 'string'
+      && typeof session.accessToken === 'string'
+      && typeof session.refreshToken === 'string'
+    ) {
+      return session;
+    }
+    sessionStorage.removeItem(sessionKey);
   } catch {
     sessionStorage.removeItem(sessionKey);
   }
@@ -29,6 +38,66 @@ export function getSession() {
 
 export function clearSession() {
   sessionStorage.removeItem(sessionKey);
+}
+
+let refreshInProgress: Promise<AuthSession> | null = null;
+
+export function refreshSession() {
+  if (!refreshInProgress) {
+    refreshInProgress = (async () => {
+      const session = readSession();
+      if (!session) {
+        throw new Error('Tu sesión caducó. Inicia sesión de nuevo para continuar.');
+      }
+
+      let response: Response;
+      try {
+        response = await fetch(`${apiUrl}/api/v1/auth/refresh`, {
+          method: 'POST',
+          headers: { 'content-type': 'application/json' },
+          body: JSON.stringify({ refreshToken: session.refreshToken })
+        });
+      } catch (error) {
+        throw new Error(describeNetworkError(error));
+      }
+
+      if (response.status === 401) {
+        clearSession();
+        throw new Error('Tu sesión caducó. Inicia sesión de nuevo para continuar.');
+      }
+
+      const body = await parseResponse(response) as { data: AuthSession };
+      sessionStorage.setItem(sessionKey, JSON.stringify(body.data));
+      return body.data;
+    })().finally(() => {
+      refreshInProgress = null;
+    });
+  }
+
+  return refreshInProgress;
+}
+
+export async function authenticatedFetch(path: string, options: RequestInit = {}) {
+  let session = readSession();
+  if (!session) {
+    throw new Error('Tu sesión caducó. Inicia sesión de nuevo para continuar.');
+  }
+
+  const send = (accessToken: string) => {
+    const headers = new Headers(options.headers);
+    headers.set('authorization', `Bearer ${accessToken}`);
+    if (options.body && !headers.has('content-type')) {
+      headers.set('content-type', 'application/json');
+    }
+    return fetch(`${apiUrl}/api/v1${path}`, { ...options, headers });
+  };
+
+  let response = await send(session.accessToken);
+  if (response.status === 401) {
+    session = await refreshSession();
+    response = await send(session.accessToken);
+  }
+  return response;
 }
 
 async function parseResponse(response: Response) {
@@ -82,8 +151,9 @@ export async function register(input: { companyName: string; companySlug: string
 }
 
 export async function getCurrentUser(token: string) {
-  const response = await fetch(`${apiUrl}/api/v1/auth/me`, {
-    headers: { authorization: `Bearer ${token}` }
-  });
+  const session = readSession();
+  const response = session?.accessToken === token
+    ? await authenticatedFetch('/auth/me')
+    : await fetch(`${apiUrl}/api/v1/auth/me`, { headers: { authorization: `Bearer ${token}` } });
   return parseResponse(response) as Promise<{ data: { userId: string; tenantId: string; role: string; permissions: string[] } }>;
 }

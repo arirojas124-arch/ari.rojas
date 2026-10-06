@@ -2,9 +2,10 @@ import { Router } from 'express';
 import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
 import mongoose from 'mongoose';
+import { createHmac, randomUUID } from 'node:crypto';
 import { z } from 'zod';
 import { config } from '../../config.js';
-import { Company, User } from './auth.models.js';
+import { Company, RefreshSession, User } from './auth.models.js';
 import { requireAuth, requirePermission } from './auth.middleware.js';
 import { permissionsForRole } from './permissions.js';
 import { authRateLimit } from './rate-limit.js';
@@ -27,6 +28,10 @@ const loginSchema = z.object({
   password: z.string().min(1).max(128)
 });
 
+const refreshSchema = z.object({ refreshToken: z.string().min(1) }).strict();
+const refreshSecret = createHmac('sha256', config.JWT_ACCESS_SECRET).update('ari-erp-refresh-token-v1').digest('hex');
+const refreshLifetimeMs = 30 * 24 * 60 * 60 * 1000;
+
 function normalizeTenantLookup(tenantId: string) {
   const trimmed = tenantId.trim();
   if (!trimmed) return null;
@@ -38,11 +43,22 @@ function normalizeTenantLookup(tenantId: string) {
   return { kind: 'slug' as const, value: trimmed.toLowerCase() };
 }
 
-function issueAccessToken(user: { id: string; tenantId: string; role: string }) {
-  return jwt.sign({ tenantId: user.tenantId, role: user.role, permissions: permissionsForRole(user.role) }, config.JWT_ACCESS_SECRET, {
-    subject: user.id,
-    expiresIn: config.JWT_ACCESS_EXPIRES_IN as jwt.SignOptions['expiresIn']
-  });
+async function issueTokenPair(user: { id: string; tenantId: string; role: string }) {
+  const tokenId = randomUUID();
+  const expiresAt = new Date(Date.now() + refreshLifetimeMs);
+  const accessToken = jwt.sign(
+    { tenantId: user.tenantId, role: user.role, permissions: permissionsForRole(user.role) },
+    config.JWT_ACCESS_SECRET,
+    { subject: user.id, expiresIn: config.JWT_ACCESS_EXPIRES_IN as jwt.SignOptions['expiresIn'] }
+  );
+  const refreshToken = jwt.sign(
+    { tenantId: user.tenantId, tokenId },
+    refreshSecret,
+    { subject: user.id, expiresIn: '30d' }
+  );
+
+  await RefreshSession.create({ tokenId, userId: user.id, tenantId: user.tenantId, expiresAt });
+  return { userId: user.id, tenantId: user.tenantId, accessToken, refreshToken };
 }
 
 router.post('/register', async (request, response, next) => {
@@ -66,7 +82,7 @@ router.post('/register', async (request, response, next) => {
     });
 
     response.status(201).json({
-      data: { userId: user.id, tenantId: company.id, accessToken: issueAccessToken({ id: user.id, tenantId: company.id, role: user.role }) }
+      data: await issueTokenPair({ id: user.id, tenantId: company.id, role: user.role })
     });
   } catch (error) {
     next(error);
@@ -99,7 +115,57 @@ router.post('/login', authRateLimit, async (request, response, next) => {
       return;
     }
 
-    response.json({ data: { userId: user.id, tenantId: user.tenantId.toString(), accessToken: issueAccessToken({ id: user.id, tenantId: user.tenantId.toString(), role: user.role }) } });
+    response.json({
+      data: await issueTokenPair({ id: user.id, tenantId: user.tenantId.toString(), role: user.role })
+    });
+  } catch (error) {
+    next(error);
+  }
+});
+
+router.post('/refresh', async (request, response, next) => {
+  try {
+    const { refreshToken } = refreshSchema.parse(request.body);
+    let payload: jwt.JwtPayload;
+    try {
+      const verified = jwt.verify(refreshToken, refreshSecret);
+      if (
+        typeof verified === 'string'
+        || typeof verified.sub !== 'string'
+        || typeof verified.tenantId !== 'string'
+        || typeof verified.tokenId !== 'string'
+      ) {
+        throw new Error('Invalid refresh token claims');
+      }
+      payload = verified;
+    } catch {
+      response.status(401).json({ error: { code: 'INVALID_REFRESH_TOKEN', message: 'Session expired. Sign in again.' } });
+      return;
+    }
+
+    const storedSession = await RefreshSession.findOneAndDelete({
+      tokenId: payload.tokenId,
+      userId: payload.sub,
+      tenantId: payload.tenantId,
+      expiresAt: { $gt: new Date() }
+    });
+    if (!storedSession) {
+      response.status(401).json({ error: { code: 'INVALID_REFRESH_TOKEN', message: 'Session expired. Sign in again.' } });
+      return;
+    }
+
+    const [user, company] = await Promise.all([
+      User.findOne({ _id: payload.sub, tenantId: payload.tenantId, isActive: true }),
+      Company.findOne({ _id: payload.tenantId, isActive: true })
+    ]);
+    if (!user || !company) {
+      response.status(401).json({ error: { code: 'INVALID_REFRESH_TOKEN', message: 'Session expired. Sign in again.' } });
+      return;
+    }
+
+    response.json({
+      data: await issueTokenPair({ id: user.id, tenantId: user.tenantId.toString(), role: user.role })
+    });
   } catch (error) {
     next(error);
   }
