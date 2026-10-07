@@ -22,13 +22,25 @@ La prueba de alta contra MongoDB queda pendiente porque Atlas todavía no está 
 
 - Usuarios: listado por empresa, creación con contraseña, edición de nombre/rol y activación/desactivación.
 - Clientes: listado, alta, edición y activación/desactivación.
-- Productos: listado, alta, edición de SKU/precio/existencia y activación/desactivación.
+- Productos: listado, alta con existencia inicial, edición de SKU/precio/categoría y activación/desactivación.
+- Categorías: administración y asignación a productos.
+- Almacenes: administración de ubicaciones; cada almacén conserva existencias independientes.
+- Existencias: consulta por almacén y ajustes auditados que actualizan el total del producto; las ventas descuentan del almacén seleccionado.
+- Cotizaciones: propuestas con precios e importes guardados, vigencia y transición de borrador a enviada, aceptada o rechazada.
+- Movimientos: historial de ajustes y salidas de ventas por almacén y producto.
+- Empresa: consulta y edición de razón social, dirección y teléfono según permisos.
 - Los endpoints mantienen aislamiento por empresa (`tenantId`) y verifican permisos del token.
+- Proveedores: listado, alta, edición y activación/desactivación, aislados por empresa y protegidos por permisos.
+- Finanzas: registro de ingresos y gastos; cuentas por cobrar ligadas a facturas y cuentas por pagar ligadas a órdenes, con pagos parciales.
+- Personas: empleados, departamentos y asistencia diaria con estados de asistencia, falta y permiso.
+- Proyectos: proyectos con fechas/estado y tareas asignadas con seguimiento de bloqueos y avance.
+- Auditoría: captura de escrituras autenticadas con usuario, recurso, estado HTTP y fecha, consultable por la empresa.
+- Compras: solicitudes con aprobación, órdenes vinculadas a proveedor y almacén, y recepción de mercancía que actualiza existencias e historial en una transacción.
 - La sesión renueva automáticamente el token de acceso mientras el token de renovación siga vigente; las sesiones antiguas deberán iniciar sesión una vez para obtenerlo.
 - Ventas: registro transaccional con cliente, productos y existencias; el folio y los importes se guardan como snapshot.
 - Facturas: se generan automáticamente como documentos internos no fiscales; su estado de pago se puede actualizar.
 - Reportes: ventas totales, promedio, pagos pendientes/pagados, productos principales y ventas diarias, con filtros y exportación CSV.
-- Compras, inventario/movimientos independientes y el resto de módulos continúan pendientes.
+- Transferencias de almacén continúan pendientes.
 
 ## Validación
 

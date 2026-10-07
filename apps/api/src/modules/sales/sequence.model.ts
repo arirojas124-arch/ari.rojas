@@ -2,7 +2,7 @@ import mongoose, { Model, Schema } from 'mongoose';
 
 export interface SequenceDocument extends mongoose.Document {
   tenantId: mongoose.Types.ObjectId;
-  kind: 'sale' | 'invoice';
+  kind: 'sale' | 'invoice' | 'quote' | 'purchase_request' | 'purchase_order' | 'receipt';
   year: number;
   value: number;
 }
@@ -10,7 +10,7 @@ export interface SequenceDocument extends mongoose.Document {
 const sequenceSchema = new Schema(
   {
     tenantId: { type: Schema.Types.ObjectId, required: true },
-    kind: { type: String, enum: ['sale', 'invoice'], required: true },
+    kind: { type: String, enum: ['sale', 'invoice', 'quote', 'purchase_request', 'purchase_order', 'receipt'], required: true },
     year: { type: Number, required: true },
     value: { type: Number, required: true, default: 0 }
   },

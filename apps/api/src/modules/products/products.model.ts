@@ -5,9 +5,12 @@ export interface ProductDocument extends mongoose.Document {
   name: string;
   sku: string;
   description?: string;
+  categoryId?: mongoose.Types.ObjectId;
+  categoryName?: string;
   price: number;
   stock: number;
   isActive: boolean;
+  inventoryInitialized: boolean;
 }
 
 const productSchema = new Schema(
@@ -16,8 +19,11 @@ const productSchema = new Schema(
     name: { type: String, required: true, trim: true, maxlength: 120 },
     sku: { type: String, required: true, trim: true, uppercase: true, maxlength: 64 },
     description: { type: String, trim: true, maxlength: 500 },
+    categoryId: { type: Schema.Types.ObjectId, ref: 'Category' },
+    categoryName: { type: String, trim: true, maxlength: 100 },
     price: { type: Number, required: true, min: 0 },
     stock: { type: Number, required: true, min: 0, default: 0 },
+    inventoryInitialized: { type: Boolean, default: false },
     isActive: { type: Boolean, default: true }
   },
   { timestamps: true }

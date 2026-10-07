@@ -30,6 +30,7 @@
 .resource-dialog h2 { margin: 5px 0 0; color: var(--ari-color-text); font-size: 20px; }
 .resource-close { width: 32px; height: 32px; border: 1px solid var(--ari-color-border); border-radius: var(--ari-radius-sm); color: var(--ari-color-text-muted); background: var(--ari-color-surface); font-size: 21px; cursor: pointer; }
 .resource-form { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px; }
+.purchasing-form, .company-form { padding: 18px; }
 .resource-field { display: flex; min-width: 0; flex-direction: column; gap: 6px; color: var(--ari-color-text); font-size: 11px; font-weight: 600; }
 .resource-field-wide { grid-column: 1 / -1; }
 .resource-field input, .resource-field select, .resource-field textarea { font-weight: 400; }

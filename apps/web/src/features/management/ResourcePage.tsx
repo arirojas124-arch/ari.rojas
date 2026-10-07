@@ -8,12 +8,13 @@ import './resource-page.css';
 type Field = {
   name: string;
   label: string;
-  type?: 'text' | 'email' | 'password' | 'number' | 'select' | 'textarea';
+  type?: 'text' | 'email' | 'password' | 'number' | 'select' | 'textarea' | 'date';
   required?: boolean;
   createOnly?: boolean;
   minLength?: number;
   min?: number;
   step?: number;
+  optionsEndpoint?: string;
   options?: Array<{ label: string; value: string }>;
 };
 
@@ -45,6 +46,8 @@ export function ResourcePage({ title, description, endpoint, permission, fields,
   const [editing, setEditing] = useState<ManagedRecord | null>(null);
   const [form, setForm] = useState<Record<string, string>>({});
   const [query, setQuery] = useState('');
+  const [remoteOptions, setRemoteOptions] = useState<Record<string, Array<{ label: string; value: string }>>>({});
+  const optionEndpointKey = [...new Set(fields.flatMap((field) => field.optionsEndpoint ? [field.optionsEndpoint] : []))].join('|');
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -66,6 +69,23 @@ export function ResourcePage({ title, description, endpoint, permission, fields,
   useEffect(() => { void load(); }, [load]);
 
   useEffect(() => {
+    const endpoints = optionEndpointKey ? optionEndpointKey.split('|') : [];
+    if (!endpoints.length) return;
+    let cancelled = false;
+    Promise.all(endpoints.map(async (optionEndpoint) => {
+      const options = await listRecords<ManagedRecord>(optionEndpoint);
+      return [optionEndpoint, options
+        .filter((option) => option.isActive !== false)
+        .map((option) => ({ label: String(option.name ?? ''), value: option._id }))] as const;
+    })).then((entries) => {
+      if (!cancelled) setRemoteOptions(Object.fromEntries(entries));
+    }).catch((error: unknown) => {
+      if (!cancelled) setLoadError(error instanceof Error ? error.message : 'No se pudieron cargar las opciones.');
+    });
+    return () => { cancelled = true; };
+  }, [optionEndpointKey]);
+
+  useEffect(() => {
     const session = getSession();
     if (!session) return;
     getCurrentUser(session.accessToken)
@@ -85,7 +105,10 @@ export function ResourcePage({ title, description, endpoint, permission, fields,
   function openEdit(record: ManagedRecord) {
     setEditing(record);
     setSaveError('');
-    setForm(Object.fromEntries(fields.map((field) => [field.name, String(record[field.name] ?? '')])));
+    setForm(Object.fromEntries(fields.map((field) => {
+      const value = record[field.name];
+      return [field.name, field.type === 'date' && value ? new Date(String(value)).toISOString().slice(0, 10) : String(value ?? '')];
+    })));
     setDialogOpen(true);
   }
 
@@ -103,7 +126,10 @@ export function ResourcePage({ title, description, endpoint, permission, fields,
     for (const field of fields) {
       if (editing && field.createOnly) continue;
       if (field.type === 'password' && editing && !form[field.name]) continue;
-      input[field.name] = field.type === 'number' ? Number(form[field.name]) : form[field.name];
+      if (field.type === 'date' && !form[field.name]) continue;
+      input[field.name] = field.type === 'number' ? Number(form[field.name])
+        : field.type === 'date' ? new Date(`${form[field.name]}T00:00:00.000Z`).toISOString()
+          : form[field.name];
     }
 
     try {
@@ -187,7 +213,16 @@ export function ResourcePage({ title, description, endpoint, permission, fields,
                 <span>{field.label}{field.required ? ' *' : ''}</span>
                 {field.type === 'select' ? (
                   <select required={field.required} value={form[field.name] ?? ''} onChange={(event) => setForm((current) => ({ ...current, [field.name]: event.target.value }))}>
-                    {field.options?.map((option) => <option key={option.value} value={option.value}>{option.label}</option>)}
+                    {!field.required ? <option value="">Sin asignar</option> : null}
+                    {(() => {
+                      const options = field.options ?? (field.optionsEndpoint ? remoteOptions[field.optionsEndpoint] : undefined) ?? [];
+                      const selectedValue = form[field.name];
+                      const selectedLabel = editing?.[`${field.name.replace(/Id$/, '')}Name`];
+                      const availableOptions = selectedValue && !options.some((option) => option.value === selectedValue)
+                        ? [...options, { value: selectedValue, label: String(selectedLabel ?? 'Opción inactiva') }]
+                        : options;
+                      return availableOptions.map((option) => <option key={option.value} value={option.value}>{option.label}</option>);
+                    })()}
                   </select>
                 ) : field.type === 'textarea' ? (
                   <textarea maxLength={500} rows={3} value={form[field.name] ?? ''} onChange={(event) => setForm((current) => ({ ...current, [field.name]: event.target.value }))} />

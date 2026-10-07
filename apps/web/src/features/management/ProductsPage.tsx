@@ -11,13 +11,15 @@ export function ProductsPage() {
     fields={[
       { name: 'name', label: 'Nombre del producto', required: true },
       { name: 'sku', label: 'Código SKU', required: true },
+      { name: 'categoryId', label: 'Categoría', type: 'select', optionsEndpoint: '/categories' },
       { name: 'price', label: 'Precio', type: 'number', min: 0, step: 0.01, required: true },
-      { name: 'stock', label: 'Existencia inicial', type: 'number', min: 0, step: 1, required: true },
+      { name: 'stock', label: 'Existencia inicial (almacén principal)', type: 'number', min: 0, step: 1, required: true, createOnly: true },
       { name: 'description', label: 'Descripción', type: 'textarea' }
     ]}
     columns={[
       { key: 'sku', label: 'SKU' },
       { key: 'name', label: 'Producto' },
+      { key: 'categoryName', label: 'Categoría' },
       { key: 'price', label: 'Precio', format: formatPrice },
       { key: 'stock', label: 'Existencia' }
     ]}

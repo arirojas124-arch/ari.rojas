@@ -5,6 +5,9 @@ import { requireAuth, requirePermission } from '../auth/auth.middleware.js';
 import { Customer } from '../customers/customers.model.js';
 import { Invoice } from '../invoices/invoices.model.js';
 import { Product } from '../products/products.model.js';
+import { InventoryLevel, InventoryMovement } from '../inventory/inventory.models.js';
+import { ensureLegacyInventory } from '../inventory/inventory.service.js';
+import { Warehouse } from '../warehouses/warehouses.model.js';
 import { Sale } from './sales.model.js';
 import { Sequence } from './sequence.model.js';
 
@@ -12,6 +15,7 @@ const router = Router();
 
 const createSaleSchema = z.object({
   customerId: z.string().regex(/^[a-f\d]{24}$/i),
+  warehouseId: z.string().regex(/^[a-f\d]{24}$/i),
   items: z.array(z.object({
     productId: z.string().regex(/^[a-f\d]{24}$/i),
     quantity: z.number().int().positive().max(1_000_000)
@@ -46,7 +50,14 @@ router.post('/', requireAuth, requirePermission('sales:write'), async (request, 
   let responseData: { sale: unknown; invoice: unknown } | undefined;
 
   try {
+    await ensureLegacyInventory(tenantId);
     await session.withTransaction(async () => {
+      const warehouse = await Warehouse.findOne({ _id: input.warehouseId, tenantId, isActive: true }).session(session);
+      if (!warehouse) {
+        const error = new Error('El almacén seleccionado no existe o está inactivo.');
+        error.name = 'INVALID_SALE_WAREHOUSE';
+        throw error;
+      }
       const customer = await Customer.findOne({ _id: customerId, tenantId, isActive: true }).session(session);
       if (!customer) {
         const error = new Error('El cliente seleccionado no existe o está inactivo.');
@@ -96,6 +107,19 @@ router.post('/', requireAuth, requirePermission('sales:write'), async (request, 
       const total = Math.round(items.reduce((sum, item) => sum + item.lineTotal, 0) * 100) / 100;
 
       for (const item of items) {
+        const updatedLevel = await InventoryLevel.findOneAndUpdate(
+          {
+            tenantId, warehouseId: warehouse._id, productId: item.productId,
+            quantity: { $gte: item.quantity }
+          },
+          { $inc: { quantity: -item.quantity } },
+          { new: true, session }
+        );
+        if (!updatedLevel) {
+          const error = new Error(`Existencia insuficiente en ${warehouse.name} para ${item.name}.`);
+          error.name = 'INSUFFICIENT_STOCK';
+          throw error;
+        }
         const updatedProduct = await Product.findOneAndUpdate(
           { _id: item.productId, tenantId, isActive: true, stock: { $gte: item.quantity } },
           { $inc: { stock: -item.quantity } },
@@ -106,10 +130,19 @@ router.post('/', requireAuth, requirePermission('sales:write'), async (request, 
           error.name = 'INSUFFICIENT_STOCK';
           throw error;
         }
+        await InventoryMovement.create([{
+          tenantId,
+          warehouseId: warehouse._id,
+          productId: item.productId,
+          quantityChange: -item.quantity,
+          reason: `Venta ${saleNumber}`,
+          createdBy: userId
+        }], { session });
       }
 
       const [sale] = await Sale.create([{
         tenantId,
+        warehouseId: warehouse._id,
         saleNumber,
         customerId,
         customerName: customer.name,
@@ -137,6 +170,10 @@ router.post('/', requireAuth, requirePermission('sales:write'), async (request, 
   } catch (error) {
     if (error instanceof Error && error.name === 'INVALID_SALE_CUSTOMER') {
       response.status(400).json({ error: { code: 'INVALID_SALE_CUSTOMER', message: error.message } });
+      return;
+    }
+    if (error instanceof Error && error.name === 'INVALID_SALE_WAREHOUSE') {
+      response.status(400).json({ error: { code: 'INVALID_SALE_WAREHOUSE', message: error.message } });
       return;
     }
     if (error instanceof Error && error.name === 'INVALID_SALE_PRODUCT') {

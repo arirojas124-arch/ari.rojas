@@ -39,10 +39,18 @@ export function listRecords<T extends ManagedRecord>(path: string) {
   return request<T[]>(path);
 }
 
+export function getRecord<T>(path: string) {
+  return request<T>(path);
+}
+
 export function createRecord<T extends ManagedRecord>(path: string, input: Record<string, unknown>) {
   return request<T>(path, { method: 'POST', body: JSON.stringify(input) });
 }
 
 export function updateRecord<T extends ManagedRecord>(path: string, id: string, input: Record<string, unknown>) {
   return request<T>(`${path}/${encodeURIComponent(id)}`, { method: 'PATCH', body: JSON.stringify(input) });
+}
+
+export function updateRecordAtPath<T>(path: string, input: Record<string, unknown>) {
+  return request<T>(path, { method: 'PATCH', body: JSON.stringify(input) });
 }
